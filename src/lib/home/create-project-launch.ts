@@ -22,7 +22,7 @@ export interface HomeWorkspaceLaunchTarget {
   pathname: string
   query: {
     episode: string
-    autoRun: 'storyToScript'
+    autoRun?: 'storyToScript'
   }
 }
 

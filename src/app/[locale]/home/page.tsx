@@ -13,11 +13,13 @@ import { RatioSelector, StyleSelector } from '@/components/selectors/RatioStyleS
 import { ART_STYLES, VIDEO_RATIOS } from '@/lib/constants'
 import { Link, useRouter } from '@/i18n/navigation'
 import { apiFetch } from '@/lib/api-fetch'
+import { expandHomeStory } from '@/lib/home/ai-story-expand'
 import { createHomeProjectLaunch } from '@/lib/home/create-project-launch'
 import {
   HOME_QUICK_START_MIN_ROWS,
   resolveTextareaTargetHeight,
 } from '@/lib/home/quick-start-textarea'
+import AiWriteModal from '@/components/home/AiWriteModal'
 
 interface ProjectStats {
   episodes: number
@@ -50,6 +52,8 @@ export default function HomePage() {
   const [videoRatio, setVideoRatio] = useState('9:16')
   const [artStyle, setArtStyle] = useState('american-comic')
   const [createLoading, setCreateLoading] = useState(false)
+  const [aiWriteOpen, setAiWriteOpen] = useState(false)
+  const [aiWriteLoading, setAiWriteLoading] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const textareaMinHeightRef = useRef<number | null>(null)
 
@@ -145,6 +149,26 @@ export default function HomePage() {
       window.alert(message)
     } finally {
       setCreateLoading(false)
+    }
+  }
+
+  // AI 帮我写 — 直接生成文本并回填首页输入框
+  const handleAiWriteStart = async (prompt: string) => {
+    if (aiWriteLoading) return
+    setAiWriteLoading(true)
+    try {
+      const result = await expandHomeStory({
+        apiFetch,
+        prompt,
+      })
+
+      setInputValue(result.expandedText)
+      setAiWriteOpen(false)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed'
+      window.alert(message)
+    } finally {
+      setAiWriteLoading(false)
     }
   }
 
@@ -251,7 +275,7 @@ export default function HomePage() {
               className="w-full bg-transparent border-none outline-none text-[var(--glass-text-primary)] placeholder:text-[var(--glass-text-tertiary)] text-base resize-none p-5 pb-3 custom-scrollbar"
             />
 
-            {/* 底部工具栏：比例 + 风格 + 创建按钮 */}
+            {/* 底部工具栏：比例 + 风格 + AI帮我写 + 创建按钮 */}
             <div className="flex items-end gap-3 px-5 pb-4">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="w-[160px] flex-shrink-0">
@@ -270,6 +294,23 @@ export default function HomePage() {
                 </div>
               </div>
               <button
+                onClick={() => setAiWriteOpen(true)}
+                disabled={createLoading}
+                className="glass-btn-base px-4 py-2.5 text-sm flex-shrink-0 border border-[var(--glass-stroke-strong)] hover:border-[var(--glass-tone-info-fg)]/40 transition-all flex items-center gap-1.5"
+              >
+                <AppIcon name="sparkles" className="w-4 h-4 text-[#7c3aed]" />
+                <span
+                  className="font-medium"
+                  style={{
+                    background: 'linear-gradient(135deg, #3b82f6, #7c3aed)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  {t('aiWrite.trigger')}
+                </span>
+              </button>
+              <button
                 onClick={() => void handleCreate()}
                 disabled={!inputValue.trim() || createLoading}
                 className="glass-btn-base glass-btn-primary px-5 py-2.5 text-sm flex-shrink-0 disabled:opacity-50"
@@ -280,6 +321,14 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+        {/* AI 帮我写模态框 */}
+        <AiWriteModal
+          open={aiWriteOpen}
+          loading={aiWriteLoading}
+          onClose={() => setAiWriteOpen(false)}
+          onStart={(prompt) => void handleAiWriteStart(prompt)}
+          t={(key: string) => t(`aiWrite.${key}`)}
+        />
       </main>
 
       {/* 最近项目 */}

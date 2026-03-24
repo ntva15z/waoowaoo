@@ -59,6 +59,10 @@ vi.mock('@/lib/home/create-project-launch', () => ({
   createHomeProjectLaunch: vi.fn(),
 }))
 
+vi.mock('@/lib/home/ai-story-expand', () => ({
+  expandHomeStory: vi.fn(),
+}))
+
 describe('resolveTextareaTargetHeight', () => {
   it('keeps the home quick-start input at least three rows tall', () => {
     expect(resolveTextareaTargetHeight({

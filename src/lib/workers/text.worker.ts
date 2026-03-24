@@ -25,6 +25,7 @@ import { handleStoryToScriptTask } from './handlers/story-to-script'
 import { handleScriptToStoryboardTask } from './handlers/script-to-storyboard'
 import { handleVoiceAnalyzeTask } from './handlers/voice-analyze'
 import { handleAssetHubAIDesignTask } from './handlers/asset-hub-ai-design'
+import { handleAiStoryExpandTask } from './handlers/ai-story-expand'
 import { handleClipsBuildTask } from './handlers/clips-build'
 import { handleAnalyzeNovelTask } from './handlers/analyze-novel'
 import { handleScreenplayConvertTask } from './handlers/screenplay-convert'
@@ -663,6 +664,8 @@ async function processTextTask(job: Job<TaskJobData>) {
       return await handleVoiceAnalyzeTask(job)
     case TASK_TYPE.ANALYZE_NOVEL:
       return await handleAnalyzeNovelTask(job)
+    case TASK_TYPE.AI_STORY_EXPAND:
+      return await handleAiStoryExpandTask(job)
     case TASK_TYPE.CLIPS_BUILD:
       return await handleClipsBuildTask(job)
     case TASK_TYPE.SCREENPLAY_CONVERT:
